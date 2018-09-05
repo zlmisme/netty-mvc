@@ -17,7 +17,8 @@ public class App {
     public static void main( String[] args ) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         Router router = RouterUtil.router.get("/");
         System.out.println(new JSONObject(router));
-        Object invoke = router.getMethod().invoke((Class)(router.getController()));
+        Class<?> controller = router.getController();
+        Object invoke = router.getMethod().invoke(controller.newInstance());
         System.out.println(invoke);
     }
 }

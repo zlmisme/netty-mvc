@@ -1,6 +1,7 @@
 package com.zlmthy.server;
 
 import com.zlmthy.router.RouterUtil;
+import com.zlmthy.router.entity.Router;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,6 +12,7 @@ import io.netty.util.AsciiString;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static io.netty.handler.codec.rtsp.RtspResponseStatuses.OK;
@@ -35,7 +37,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws IllegalAccessException, InvocationTargetException, InstantiationException {
 
         if (msg instanceof FullHttpRequest) {
             //客户端的请求对象
@@ -45,21 +47,29 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
 
             //获取客户端的URL
             String uri = req.uri();
-            //根据不同的请求API做不同的处理(路由分发)，只处理POST方法
-            if (req.method() == HttpMethod.POST) {
-                HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(req);
-                try {
-                    String router = RouterUtil.getRouter();
-                    responseJson.put("success", router);
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
+            Router router = RouterUtil.getRouter(uri);
+
+            boolean existUri = false;
+            if (router != null){
+                if (router.getHttpMethod() == HttpMethod.POST){
+
+                    HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(req);
+                    existUri = true;
+
+                }else if (router.getHttpMethod() == HttpMethod.GET){
+
+                    QueryStringDecoder decoder = new QueryStringDecoder(req.uri());
+                    existUri = true;
+                }else {
                     responseJson.put("error", "404 Not Find");
                 }
-
-            } else {
-                QueryStringDecoder decoder = new QueryStringDecoder(req.uri());
-                //错误处理
+            }else {
                 responseJson.put("error", "404 Not Find");
+            }
+
+            if (existUri){
+                Object result = RouterUtil.getRouterResult(router);
+                responseJson.put("success",result);
             }
             //向客户端发送结果
             responseJson(ctx, req, responseJson.toString());
@@ -85,7 +95,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(jsonByteByte));
         response.headers().set(CONTENT_TYPE, "text/json");
         response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
-        System.out.println("keepAlive=>"+keepAlive);
+        System.out.println("keepAlive=>" + keepAlive);
         if (!keepAlive) {
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         } else {

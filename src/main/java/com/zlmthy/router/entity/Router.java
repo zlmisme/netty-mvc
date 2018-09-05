@@ -1,5 +1,7 @@
 package com.zlmthy.router.entity;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 import java.lang.reflect.Method;
 
 /**
@@ -23,7 +25,12 @@ public class Router {
     /**
      * 路由的路径
      */
-    private Object controller;
+    private Class<?> controller;
+
+    /**
+     * 请求方式
+     */
+    private HttpMethod httpMethod;
 
     public Router() {
     }
@@ -44,11 +51,19 @@ public class Router {
         this.method = method;
     }
 
-    public Object getController() {
+    public Class<?> getController() {
         return controller;
     }
 
-    public void setController(Object controller) {
+    public void setController(Class<?> controller) {
         this.controller = controller;
+    }
+
+    public HttpMethod getHttpMethod() {
+        return httpMethod;
+    }
+
+    public void setHttpMethod(HttpMethod httpMethod) {
+        this.httpMethod = httpMethod;
     }
 }
