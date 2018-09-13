@@ -2,6 +2,7 @@ package com.zlmthy.router;
 
 import com.zlmthy.ClassUtil;
 import com.zlmthy.action.HelloAction;
+import com.zlmthy.annotations.Controller;
 import com.zlmthy.annotations.RequestMapper;
 import com.zlmthy.router.entity.Router;
 import io.netty.handler.codec.http.HttpMethod;
@@ -48,20 +49,28 @@ public class RouterUtil {
         String controllerUrl = "";
 
         for (Class clazz : allClassByPackageName){
-            Annotation annotation = clazz.getAnnotation(RequestMapper.class);
-            RequestMapper requestMapper = (RequestMapper)annotation;
+            // 判断类是否注解controller
+            Annotation controllerAnnotation = clazz.getAnnotation(Controller.class);
+            Controller controller = (Controller)controllerAnnotation;
+            if (controller!=null){
+                // 如果此类存在controller 注解则进行如下操作
+                // 1. 获取类级别的requestMapper注解 获得路径
+                Annotation requestAnnotation = clazz.getAnnotation(RequestMapper.class);
+                if (requestAnnotation!=null){
+                    controllerUrl = ((RequestMapper)requestAnnotation).value();
+                }
 
-            controllerUrl = requestMapper.value();
-            for (Method method : clazz.getMethods()){
-                RequestMapper mapper = method.getAnnotation(RequestMapper.class);
-                if (mapper!=null){
-                    String resultUrl = controllerUrl+mapper.value();
-                    Router router = new Router();
-                    router.setHttpMethod(HttpMethod.GET);
-                    router.setPath(resultUrl);
-                    router.setMethod(method);
-                    router.setController(clazz);
-                    routerMap.put(resultUrl,router);
+                for (Method method : clazz.getMethods()){
+                    RequestMapper mapper = method.getAnnotation(RequestMapper.class);
+                    if (mapper!=null){
+                        String resultUrl = controllerUrl+mapper.value();
+                        Router router = new Router();
+                        router.setHttpMethod(HttpMethod.GET);
+                        router.setPath(resultUrl);
+                        router.setMethod(method);
+                        router.setController(clazz);
+                        routerMap.put(resultUrl,router);
+                    }
                 }
             }
         }
