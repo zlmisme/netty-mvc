@@ -1,14 +1,19 @@
 package com.zlmthy.router;
 
+import com.zlmthy.ClassUtil;
 import com.zlmthy.action.HelloAction;
 import com.zlmthy.annotations.RequestMapper;
 import com.zlmthy.router.entity.Router;
 import io.netty.handler.codec.http.HttpMethod;
+import org.json.JSONObject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author zengliming
@@ -18,24 +23,48 @@ import java.util.Map;
  */
 public class RouterUtil {
 
-    public static Map<String,Router> router = new HashMap<>();
+    private static Map<String,Router> routerMap = new ConcurrentHashMap<>();
 
-    static {
+
+    public static void initRouter(){
         try {
-            Router r = new Router();
-            Class<HelloAction> aClass = HelloAction.class;
-            r.setController(aClass);
-            r.setMethod(aClass.getMethod("hello"));
-            r.setPath("/");
-            r.setHttpMethod(HttpMethod.POST);
-            router.put("/",r);
+            new RouterUtil();
+            System.out.println("路由表=》"+new JSONObject(routerMap));
         } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
             e.printStackTrace();
         }
     }
 
-    public RouterUtil() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    private RouterUtil() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         // 初始化路由
+        List<Class<?>> allClassByPackageName = ClassUtil.getAllClassByPackageName("com.zlmthy.action");
+
+        String controllerUrl = "";
+
+        for (Class clazz : allClassByPackageName){
+            Annotation annotation = clazz.getAnnotation(RequestMapper.class);
+            RequestMapper requestMapper = (RequestMapper)annotation;
+
+            controllerUrl = requestMapper.value();
+            for (Method method : clazz.getMethods()){
+                RequestMapper mapper = method.getAnnotation(RequestMapper.class);
+                if (mapper!=null){
+                    String resultUrl = controllerUrl+mapper.value();
+                    Router router = new Router();
+                    router.setHttpMethod(HttpMethod.GET);
+                    router.setPath(resultUrl);
+                    router.setMethod(method);
+                    router.setController(clazz);
+                    routerMap.put(resultUrl,router);
+                }
+            }
+        }
     }
 
     /**
@@ -44,7 +73,7 @@ public class RouterUtil {
      * @return
      */
     public static Router getRouter(String uri) {
-        return RouterUtil.router.get(uri);
+        return RouterUtil.routerMap.get(uri);
     }
 
     /**

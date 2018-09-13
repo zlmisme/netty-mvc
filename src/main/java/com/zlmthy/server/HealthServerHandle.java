@@ -47,8 +47,9 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
 
             //获取客户端的URL
             String uri = req.uri();
+            System.out.println("路径=》"+uri);
             Router router = RouterUtil.getRouter(uri);
-
+            System.out.println("路由=》"+new JSONObject(router));
             boolean existUri = false;
             if (router != null){
                 if (router.getHttpMethod() == HttpMethod.POST){

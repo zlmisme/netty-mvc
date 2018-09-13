@@ -1,5 +1,6 @@
 package com.zlmthy.server;
 
+import com.zlmthy.router.RouterUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -20,6 +21,9 @@ public class MainServer {
 
 
     public static void main(String[] args) throws InterruptedException {
+
+        RouterUtil.initRouter();
+
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workGroup = new NioEventLoopGroup();
 
