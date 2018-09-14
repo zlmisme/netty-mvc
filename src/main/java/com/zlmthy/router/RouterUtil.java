@@ -1,17 +1,14 @@
 package com.zlmthy.router;
 
-import com.zlmthy.ClassUtil;
-import com.zlmthy.action.HelloAction;
 import com.zlmthy.annotations.Controller;
 import com.zlmthy.annotations.RequestMapper;
 import com.zlmthy.router.entity.Router;
+import com.zlmthy.utils.ClassUtil;
 import io.netty.handler.codec.http.HttpMethod;
-import org.json.JSONObject;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +27,6 @@ public class RouterUtil {
     public static void initRouter(){
         try {
             new RouterUtil();
-            System.out.println("路由表=》"+new JSONObject(routerMap));
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

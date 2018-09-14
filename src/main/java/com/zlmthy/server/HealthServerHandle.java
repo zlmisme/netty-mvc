@@ -1,18 +1,23 @@
 package com.zlmthy.server;
 
+import com.alibaba.fastjson.JSON;
 import com.zlmthy.router.RouterUtil;
 import com.zlmthy.router.entity.Router;
+import com.zlmthy.utils.log.LogType;
+import com.zlmthy.utils.log.LogUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AsciiString;
-import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static io.netty.handler.codec.rtsp.RtspResponseStatuses.OK;
@@ -30,10 +35,13 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
     private static final AsciiString CONNECTION = new AsciiString("Connection");
     private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
+    private static LogUtil LOG = LogUtil.getLog(LogType.NETTY_HANDLE);
+
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
     }
+
 
 
     @Override
@@ -43,13 +51,14 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
             //客户端的请求对象
             FullHttpRequest req = (FullHttpRequest) msg;
             //新建一个返回消息的Json对象
-            JSONObject responseJson = new JSONObject();
+            Map<String,Object> responseJson = new HashMap();
+
 
             //获取客户端的URL
             String uri = req.uri();
-            System.out.println("路径=》"+uri);
+            LOG.info("路径=》{0}",uri);
             Router router = RouterUtil.getRouter(uri);
-            System.out.println("路由=》"+new JSONObject(router));
+            LOG.info("路由{0}",JSON.toJSONString(router));
             boolean existUri = false;
             if (router != null){
                 if (router.getHttpMethod() == HttpMethod.POST){
@@ -62,9 +71,11 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
                     QueryStringDecoder decoder = new QueryStringDecoder(req.uri());
                     existUri = true;
                 }else {
+                    LOG.info("request uri not exist");
                     responseJson.put("error", "404 Not Find");
                 }
             }else {
+                LOG.info("request uri not exist");
                 responseJson.put("error", "404 Not Find");
             }
 
@@ -96,7 +107,6 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(jsonByteByte));
         response.headers().set(CONTENT_TYPE, "text/json");
         response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
-        System.out.println("keepAlive=>" + keepAlive);
         if (!keepAlive) {
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         } else {
