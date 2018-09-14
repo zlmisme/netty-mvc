@@ -1,16 +1,16 @@
 package com.zlmthy;
 
-import static org.junit.Assert.assertTrue;
-
 import com.zlmthy.annotations.RequestMapper;
 import com.zlmthy.router.entity.Router;
+import com.zlmthy.utils.ClassUtil;
 import io.netty.handler.codec.http.HttpMethod;
-import org.json.JSONObject;
 import org.junit.Test;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit test for simple App.
@@ -47,7 +47,6 @@ public class AppTest
                     router.setMethod(method);
                     router.setController(clazz);
                     System.out.println(router.getHttpMethod());
-                    System.out.println(new JSONObject(router));
                 }
             }
         }

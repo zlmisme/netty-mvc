@@ -14,7 +14,7 @@ import com.zlmthy.annotations.RequestMapper;
 public class HelloAction {
 
     @RequestMapper(value = "/hello")
-    public String hello(){
-        return "hello world!";
+    public String hello(String name) {
+        return name+" say hello world!";
     }
 }

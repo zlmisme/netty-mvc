@@ -1,5 +1,9 @@
 package com.zlmthy.utils.log;
 
+import com.alibaba.fastjson.JSON;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Log4J2LoggerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,7 +26,7 @@ public class LogUtil {
     /**
      * 用log4j2日志来记录日志
      */
-    private Logger logger;
+    private InternalLogger logger;
 
     /**
      * 单例模式
@@ -36,7 +40,7 @@ public class LogUtil {
      * @param logType 日志类型
      */
     private LogUtil(LogType logType){
-        logger = LogManager.getLogger(logType.getValue());
+        logger = InternalLoggerFactory.getInstance(logType.getValue());
     }
 
     /**
@@ -58,6 +62,7 @@ public class LogUtil {
      */
     public void info(String msg, Object ...args){
         logger.info(formatMsg(msg, args));
+
     }
 
     /**

@@ -13,10 +13,16 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AsciiString;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -36,6 +42,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
     private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
     private static LogUtil LOG = LogUtil.getLog(LogType.NETTY_HANDLE);
+//    private static Logger LOG = LogManager.getLogger(LogType.NETTY_HANDLE);
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -56,6 +63,15 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
 
             //获取客户端的URL
             String uri = req.uri();
+
+            if (HttpMethod.GET.equals(req.method())){
+                QueryStringDecoder decoder = new QueryStringDecoder(req.uri());
+                uri = decoder.path();
+            }else if (HttpMethod.POST.equals(req.method())){
+                HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(req);
+            }
+
+
             LOG.info("路径=》{0}",uri);
             Router router = RouterUtil.getRouter(uri);
             LOG.info("路由{0}",JSON.toJSONString(router));
@@ -69,6 +85,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
                 }else if (router.getHttpMethod() == HttpMethod.GET){
 
                     QueryStringDecoder decoder = new QueryStringDecoder(req.uri());
+                    LOG.info(decoder.path());
                     existUri = true;
                 }else {
                     LOG.info("request uri not exist");
@@ -80,7 +97,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
             }
 
             if (existUri){
-                Object result = RouterUtil.getRouterResult(router);
+                Object result = getRouterResult(router);
                 responseJson.put("success",result);
             }
             //向客户端发送结果
@@ -120,5 +137,75 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
         cause.printStackTrace();
         ctx.close();
     }
+
+    /**
+     * 根据路由配置获取结果
+     * @param router
+     * @return
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws InvocationTargetException
+     */
+    public static Object getRouterResult(Router router) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        //得到方法中的所有参数信息
+        Class<?>[] parameterClazz = router.getMethod().getParameterTypes();
+        List<Object> listValue = new ArrayList<Object>();
+        //循环参数类型
+        for(int i=0; i<parameterClazz.length; i++){
+            fillList(listValue, parameterClazz[i],1);
+        }
+        return router.getMethod().invoke(router.getController().newInstance());
+    }
+
+
+    private static void fillList(List<Object> list, Class<?> parameter,Object value) {
+        System.out.println(parameter.getTypeName());
+        if("java.lang.String".equals(parameter.getTypeName())){
+            list.add(value);
+        }else if("java.lang.Character".equals(parameter.getTypeName())){
+            char[] ch = ((String)value).toCharArray();
+            list.add(ch[0]);
+        }else if("char".equals(parameter.getTypeName())){
+            char[] ch = ((String)value).toCharArray();
+            list.add(ch[0]);
+        }else if("java.lang.Double".equals(parameter.getTypeName())){
+            list.add(Double.parseDouble((String) value));
+        }else if("double".equals(parameter.getTypeName())){
+            list.add(Double.parseDouble((String) value));
+        }else if("java.lang.Integer".equals(parameter.getTypeName())){
+            list.add(Integer.parseInt((String) value));
+        }else if("int".equals(parameter.getTypeName())){
+            list.add(Integer.parseInt((String) value));
+        }else if("java.lang.Long".equals(parameter.getTypeName())){
+            list.add(Long.parseLong((String) value));
+        }else if("long".equals(parameter.getTypeName())){
+            list.add(Long.parseLong((String) value));
+        }else if("java.lang.Float".equals(parameter.getTypeName())){
+            list.add(Float.parseFloat((String) value));
+        }else if("float".equals(parameter.getTypeName())){
+            list.add(Float.parseFloat((String) value));
+        }else if("java.lang.Short".equals(parameter.getTypeName())){
+            list.add(Short.parseShort((String) value));
+        }else if("shrot".equals(parameter.getTypeName())){
+            list.add(Short.parseShort((String) value));
+        }else if("java.lang.Byte".equals(parameter.getTypeName())){
+            list.add(Byte.parseByte((String) value));
+        }else if("byte".equals(parameter.getTypeName())){
+            list.add(Byte.parseByte((String) value));
+        }else if("java.lang.Boolean".equals(parameter.getTypeName())){
+            if("false".equals(value) || "0".equals(value)){
+                list.add(false);
+            }else if("true".equals(value) || "1".equals(value)){
+                list.add(true);
+            }
+        }else if("boolean".equals(parameter.getTypeName())){
+            if("false".equals(value) || "0".equals(value)){
+                list.add(false);
+            }else if("true".equals(value) || "1".equals(value)){
+                list.add(true);
+            }
+        }
+    }
+
 
 }
