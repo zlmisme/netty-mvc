@@ -2,6 +2,7 @@ package com.zlmthy.action;
 
 import com.zlmthy.annotations.Controller;
 import com.zlmthy.annotations.RequestMapper;
+import io.netty.handler.codec.http.HttpRequest;
 
 /**
  * @author zengliming
@@ -14,7 +15,7 @@ import com.zlmthy.annotations.RequestMapper;
 public class HelloAction {
 
     @RequestMapper(value = "/hello")
-    public String hello(String name) {
+    public String hello(HttpRequest request,String name) {
         return name+" say hello world!";
     }
 }

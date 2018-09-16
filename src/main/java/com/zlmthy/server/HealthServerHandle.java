@@ -11,15 +11,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AsciiString;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +36,10 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
     private static final AsciiString CONNECTION = new AsciiString("Connection");
     private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
+    private static HttpRequest httpRequest;
+
+    private static HttpResponse httpResponse;
+
     private static LogUtil LOG = LogUtil.getLog(LogType.NETTY_HANDLE);
 //    private static Logger LOG = LogManager.getLogger(LogType.NETTY_HANDLE);
 
@@ -58,7 +57,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
             //客户端的请求对象
             FullHttpRequest req = (FullHttpRequest) msg;
             //新建一个返回消息的Json对象
-            Map<String,Object> responseJson = new HashMap();
+            Map<String,Object> responseJson = new HashMap<>();
 
 
             //获取客户端的URL
@@ -97,6 +96,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
             }
 
             if (existUri){
+                httpRequest = (HttpRequest)req;
                 Object result = getRouterResult(router);
                 responseJson.put("success",result);
             }
@@ -146,15 +146,16 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
      * @throws InstantiationException
      * @throws InvocationTargetException
      */
-    public static Object getRouterResult(Router router) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private static Object getRouterResult(Router router) throws IllegalAccessException, InstantiationException, InvocationTargetException {
         //得到方法中的所有参数信息
         Class<?>[] parameterClazz = router.getMethod().getParameterTypes();
         List<Object> listValue = new ArrayList<Object>();
         //循环参数类型
         for(int i=0; i<parameterClazz.length; i++){
-            fillList(listValue, parameterClazz[i],1);
+            fillList(listValue, parameterClazz[i],"zlm");
         }
-        return router.getMethod().invoke(router.getController().newInstance());
+        LOG.info("param{0}",JSON.toJSONString(listValue));
+        return router.getMethod().invoke(router.getController().newInstance(),listValue.toArray());
     }
 
 
@@ -204,6 +205,8 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
             }else if("true".equals(value) || "1".equals(value)){
                 list.add(true);
             }
+        }else if ("io.netty.handler.codec.http.HttpRequest".equals(parameter.getTypeName())){
+            list.add(httpRequest);
         }
     }
 
