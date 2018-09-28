@@ -2,7 +2,6 @@ package com.zlmthy.annotations;
 
 
 import com.zlmthy.enums.RequestMethod;
-import io.netty.handler.codec.http.HttpMethod;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
