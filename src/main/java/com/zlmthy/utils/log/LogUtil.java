@@ -1,11 +1,7 @@
 package com.zlmthy.utils.log;
 
-import com.alibaba.fastjson.JSON;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.Log4J2LoggerFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.text.MessageFormat;
 

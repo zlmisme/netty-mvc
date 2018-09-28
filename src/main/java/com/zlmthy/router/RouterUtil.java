@@ -2,6 +2,7 @@ package com.zlmthy.router;
 
 import com.zlmthy.annotations.Controller;
 import com.zlmthy.annotations.RequestMapper;
+import com.zlmthy.config.LoadConfig;
 import com.zlmthy.router.entity.Router;
 import com.zlmthy.utils.ClassUtil;
 import io.netty.handler.codec.http.HttpMethod;
@@ -38,9 +39,22 @@ public class RouterUtil {
         }
     }
 
+
+    private List<Class<?>> scanPackageClass(){
+        // 初始化路由
+       return ClassUtil.getAllClassByPackageName("");
+    }
+
+    private List<Class<?>> scanPackageClass(String packageName){
+        if ("".equals(packageName)){
+            return scanPackageClass();
+        }
+        return ClassUtil.getAllClassByPackageName(packageName);
+    }
+
     private RouterUtil() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         // 初始化路由
-        List<Class<?>> allClassByPackageName = ClassUtil.getAllClassByPackageName("com.zlmthy.action");
+        List<Class<?>> allClassByPackageName = scanPackageClass(LoadConfig.basePackage);
 
         String controllerUrl = "";
 
