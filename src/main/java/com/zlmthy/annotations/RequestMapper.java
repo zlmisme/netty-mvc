@@ -14,5 +14,5 @@ public @interface RequestMapper {
 
     String value() default "/";
 
-    RequestMethod method() default RequestMethod.GET;
+    RequestMethod[] method() default {RequestMethod.GET,RequestMethod.POST};
 }

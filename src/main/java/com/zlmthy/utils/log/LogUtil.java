@@ -71,6 +71,18 @@ public class LogUtil {
     }
 
     /**
+     * 记录error类型的日志，用于在程序出错误时排错
+     * @param msg 输出格式
+     */
+    public void error(String msg, Exception e){
+        StringBuilder sb = new StringBuilder();
+        for (StackTraceElement element : e.getStackTrace()){
+            sb.append(element.toString()).append("\n");
+        }
+        logger.error(formatMsg(msg, sb.toString()));
+    }
+
+    /**
      * 格式化日志内容，覆盖值，输出预定的格式
      * @param msg 输出格式
      * @param args 覆盖值

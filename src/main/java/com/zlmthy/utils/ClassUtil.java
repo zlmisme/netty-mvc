@@ -1,5 +1,8 @@
 package com.zlmthy.utils;
 
+import com.zlmthy.utils.log.LogType;
+import com.zlmthy.utils.log.LogUtil;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -16,26 +19,28 @@ import java.util.jar.JarFile;
 /**
  * @author zengliming
  * @ClassName ClassUtil
- * @Description TODO
+ * @Description class工具类
  * @date 2018/9/6 9:16
  */
 public class ClassUtil {
 
+    private static LogUtil log = LogUtil.getLog(LogType.UTILS);
+
     /**
      * 通过包名获取包内所有类
      *
-     * @param pkg
-     * @return
+     * @param packageName 包路径
+     * @return  通过包名获取包内所有类
      */
-    public static List<Class<?>> getAllClassByPackageName(String pkg) {
-//        String packageName = pkg.getName();
+    public static List<Class<?>> getAllClassByPackageName(String packageName) {
         // 获取当前包下以及子包下所以的类
-        List<Class<?>> returnClassList = getClasses(pkg);
-        return returnClassList;
+        return getClasses(packageName);
     }
 
     /**
      * 通过接口名取得某个接口下所有实现这个接口的类
+     * @param c 接口
+     * @return 接口包下实现该接口的所有类
      */
     public static List<Class<?>> getAllClassByInterface(Class<?> c) {
         List<Class<?>> returnClassList = null;
@@ -58,34 +63,37 @@ public class ClassUtil {
                 }
             }
         }
-
         return returnClassList;
     }
 
     /**
      * 取得某一类所在包的所有类名 不含迭代
+     * @param classLocation 源文件目录
+     * @param packageName 包
      */
     public static String[] getPackageAllClassName(String classLocation, String packageName) {
         // 将packageName分解
         String[] packagePathSplit = packageName.split("[.]");
-        String realClassLocation = classLocation;
-        int packageLength = packagePathSplit.length;
-        for (int i = 0; i < packageLength; i++) {
-            realClassLocation = realClassLocation + File.separator + packagePathSplit[i];
+        StringBuilder sb = new StringBuilder(classLocation);
+        // 获取当前包在当前系统的路径
+        for (String str : packagePathSplit){
+            // File.separator 系统目录分隔符
+            sb.append(File.separator).append(str);
         }
-        File packeageDir = new File(realClassLocation);
-        if (packeageDir.isDirectory()) {
-            String[] allClassName = packeageDir.list();
-            return allClassName;
+        // 根据当前系统所生成的路径获取目录对象
+        File packageDir = new File(sb.toString());
+        if (packageDir.isDirectory()) {
+            return packageDir.list();
+        }else {
+            log.info("不是一个目录");
+            return null;
         }
-        return null;
     }
 
     /**
      * 从包package中获取所有的Class
-     *
-     * @param packageName
-     * @return
+     * @param packageName 包
+     * @return package中获取所有的Class
      */
     private static List<Class<?>> getClasses(String packageName) {
 
@@ -155,12 +163,12 @@ public class ClassUtil {
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.error("根据包获取JarFile里面的class,异常信息{0}", e.getMessage());
                     }
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("根据包获取File里面的class,异常信息{0}", e.getMessage());
         }
 
         return classes;
@@ -168,7 +176,6 @@ public class ClassUtil {
 
     /**
      * 以文件的形式来获取包下的所有Class
-     *
      * @param packageName
      * @param packagePath
      * @param recursive
@@ -189,6 +196,10 @@ public class ClassUtil {
                 return (recursive && file.isDirectory()) || (file.getName().endsWith(".class"));
             }
         });
+        if (dirfiles == null){
+            log.info("包下没有文件和目录");
+            return;
+        }
         // 循环所有文件
         for (File file : dirfiles) {
             // 如果是目录 则继续扫描
@@ -201,7 +212,7 @@ public class ClassUtil {
                     // 添加到集合中去
                     classes.add(Class.forName(packageName + '.' + className));
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    log.error("Class没有找到, 请检查扫描路径, 异常信息{0}",e);
                 }
             }
         }

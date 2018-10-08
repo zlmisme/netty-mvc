@@ -5,6 +5,7 @@ package com.zlmthy.utils.log;
  * @date 22018-09-14 14:23
  */
 public enum LogType {
+
     /**
      * handle日志
      */
@@ -12,7 +13,15 @@ public enum LogType {
     /**
      * server日志
      */
-    SERVER("SERVER");
+    SERVER("SERVER"),
+    /**
+     * 框架日志
+     */
+    FRAMEWORK("FRAMEWORK"),
+    /**
+     * 工具类日志
+     */
+    UTILS("UTILS");
 
     LogType(String value) {
         this.value = value;

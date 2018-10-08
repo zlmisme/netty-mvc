@@ -9,7 +9,8 @@ package com.zlmthy.config;
  */
 public class LoadConfig {
 
-    public static String basePackage = "";
+//    public static String basePackage = "*";
+    public static String basePackage = "com.zlmthy.action";
 
 
     public String getBasePackage() {

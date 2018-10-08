@@ -1,5 +1,6 @@
 package com.zlmthy.router.entity;
 
+import com.zlmthy.enums.RequestMethod;
 import io.netty.handler.codec.http.HttpMethod;
 
 import java.lang.reflect.Method;
@@ -30,7 +31,7 @@ public class Router {
     /**
      * 请求方式
      */
-    private HttpMethod httpMethod;
+    private RequestMethod[] httpMethods;
 
     public Router() {
     }
@@ -59,11 +60,11 @@ public class Router {
         this.controller = controller;
     }
 
-    public HttpMethod getHttpMethod() {
-        return httpMethod;
+    public RequestMethod[] getHttpMethods() {
+        return httpMethods;
     }
 
-    public void setHttpMethod(HttpMethod httpMethod) {
-        this.httpMethod = httpMethod;
+    public void setHttpMethods(RequestMethod[] httpMethods) {
+        this.httpMethods = httpMethods;
     }
 }
