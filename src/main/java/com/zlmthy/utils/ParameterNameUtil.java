@@ -19,19 +19,27 @@ import org.objectweb.asm.*;
  */
 public class ParameterNameUtil {
 
+    /**
+     * 利用ASM获取方法参数的名称
+     * @param clazz
+     * @param method
+     * @return
+     */
     public static String[] getMethodParameterNameByAsm(Class<?> clazz, Method method) {
 
+        // 获取所有参数的类型
         final Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes == null || parameterTypes.length == 0) {
             return null;
         }
-
+        // 初始化Types
         final Type[] types = new Type[parameterTypes.length];
 
         for (int i = 0; i < parameterTypes.length; i++) {
             types[i] = Type.getType(parameterTypes[i]);
         }
 
+        // 初始化数组存放参数名称
         final String[] parameters = new String[parameterTypes.length];
 
         String className = clazz.getName();
@@ -47,7 +55,7 @@ public class ParameterNameUtil {
                 public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 
                     Type[] argumentTypes = Type.getArgumentTypes(desc);
-
+                    // 判断方法名和方法参数是不是一致
                     if (!method.getName().equals(name) || !Arrays.equals(argumentTypes, types)) {
                         return null;
                     }
