@@ -6,6 +6,7 @@ import com.zlmthy.utils.log.LogUtil;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -30,15 +31,16 @@ public class ClassUtil {
      * 通过包名获取包内所有类
      *
      * @param packageName 包路径
-     * @return  通过包名获取包内所有类
+     * @return 通过包名获取包内所有类
      */
     public static List<Class<?>> getAllClassByPackageName(String packageName) {
         // 获取当前包下以及子包下所以的类
-        return getClasses(packageName);
+        return getClasses(packageName, null);
     }
 
     /**
      * 通过接口名取得某个接口下所有实现这个接口的类
+     *
      * @param c 接口
      * @return 接口包下实现该接口的所有类
      */
@@ -49,7 +51,7 @@ public class ClassUtil {
             // 获取当前的包名
             String packageName = c.getPackage().getName();
             // 获取当前包下以及子包下所以的类
-            List<Class<?>> allClass = getClasses(packageName);
+            List<Class<?>> allClass = getClasses(packageName, null);
             if (allClass != null) {
                 returnClassList = new ArrayList<Class<?>>();
                 for (Class<?> cls : allClass) {
@@ -67,16 +69,32 @@ public class ClassUtil {
     }
 
     /**
+     * 通过接口名取得某个接口下所有实现这个接口的类
+     *
+     * @param packageName 接口
+     * @param annotation  接口
+     * @return 接口包下实现该接口的所有类
+     */
+    public static List<Class<?>> getAllClassByPackageNameAndAnnotation(String packageName, Class<? extends Annotation> annotation) {
+        if (annotation !=null && annotation.isAnnotation()) {
+            return getClasses(packageName, annotation);
+        }
+        return getClasses(packageName, null);
+    }
+
+
+    /**
      * 取得某一类所在包的所有类名 不含迭代
+     *
      * @param classLocation 源文件目录
-     * @param packageName 包
+     * @param packageName   包
      */
     public static String[] getPackageAllClassName(String classLocation, String packageName) {
         // 将packageName分解
         String[] packagePathSplit = packageName.split("[.]");
         StringBuilder sb = new StringBuilder(classLocation);
         // 获取当前包在当前系统的路径
-        for (String str : packagePathSplit){
+        for (String str : packagePathSplit) {
             // File.separator 系统目录分隔符
             sb.append(File.separator).append(str);
         }
@@ -84,7 +102,7 @@ public class ClassUtil {
         File packageDir = new File(sb.toString());
         if (packageDir.isDirectory()) {
             return packageDir.list();
-        }else {
+        } else {
             log.info("不是一个目录");
             return null;
         }
@@ -92,10 +110,11 @@ public class ClassUtil {
 
     /**
      * 从包package中获取所有的Class
+     *
      * @param packageName 包
      * @return package中获取所有的Class
      */
-    private static List<Class<?>> getClasses(String packageName) {
+    private static List<Class<?>> getClasses(String packageName, Class<? extends Annotation> annotation) {
 
         // 第一个class类的集合
         List<Class<?>> classes = new ArrayList<Class<?>>();
@@ -153,8 +172,11 @@ public class ClassUtil {
                                         // 去掉后面的".class" 获取真正的类名
                                         String className = name.substring(packageName.length() + 1, name.length() - 6);
                                         try {
-                                            // 添加到classes
-                                            classes.add(Class.forName(packageName + '.' + className));
+                                            Class<?> clazz = Class.forName(packageName + '.' + className);
+                                            if (annotation == null || clazz.getAnnotation(annotation) != null || clazz.isAnnotationPresent(annotation)) {
+                                                // 添加到classes
+                                                classes.add(clazz);
+                                            }
                                         } catch (ClassNotFoundException e) {
                                             e.printStackTrace();
                                         }
@@ -176,6 +198,7 @@ public class ClassUtil {
 
     /**
      * 以文件的形式来获取包下的所有Class
+     *
      * @param packageName
      * @param packagePath
      * @param recursive
@@ -196,7 +219,7 @@ public class ClassUtil {
                 return (recursive && file.isDirectory()) || (file.getName().endsWith(".class"));
             }
         });
-        if (dirfiles == null){
+        if (dirfiles == null) {
             log.info("包下没有文件和目录");
             return;
         }
@@ -212,7 +235,7 @@ public class ClassUtil {
                     // 添加到集合中去
                     classes.add(Class.forName(packageName + '.' + className));
                 } catch (ClassNotFoundException e) {
-                    log.error("Class没有找到, 请检查扫描路径, 异常信息{0}",e);
+                    log.error("Class没有找到, 请检查扫描路径, 异常信息{0}", e);
                 }
             }
         }

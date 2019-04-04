@@ -1,6 +1,6 @@
 package com.zlmthy.action;
 
-import com.zlmthy.annotations.Controller;
+import com.zlmthy.annotations.XxController;
 import com.zlmthy.annotations.RequestMapper;
 import com.zlmthy.enums.RequestMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.HttpRequest;
  * @Description TODO
  * @date 2018/9/5 16:30
  */
-@Controller
+@XxController
 @RequestMapper(value = "/say")
 public class HelloAction {
 

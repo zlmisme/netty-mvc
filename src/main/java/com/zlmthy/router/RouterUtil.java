@@ -1,9 +1,8 @@
 package com.zlmthy.router;
 
-import com.zlmthy.annotations.Controller;
+import com.zlmthy.annotations.XxController;
 import com.zlmthy.annotations.RequestMapper;
 import com.zlmthy.config.LoadConfig;
-import com.zlmthy.enums.RequestMethod;
 import com.zlmthy.router.entity.Router;
 import com.zlmthy.utils.ClassUtil;
 import com.zlmthy.utils.log.LogType;
@@ -76,8 +75,8 @@ public class RouterUtil {
         String controllerUrl = "";
         for (Class clazz : allClassByPackageName){
             // 判断类是否注解controller
-            Annotation controllerAnnotation = clazz.getAnnotation(Controller.class);
-            Controller controller = (Controller)controllerAnnotation;
+            Annotation controllerAnnotation = clazz.getAnnotation(XxController.class);
+            XxController controller = (XxController)controllerAnnotation;
             if (controller!=null){
                 // 如果此类存在controller 注解则进行如下操作
                 // 1. 获取类级别的requestMapper注解 获得路径

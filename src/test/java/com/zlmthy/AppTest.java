@@ -1,6 +1,10 @@
 package com.zlmthy;
 
 import com.zlmthy.annotations.RequestMapper;
+import com.zlmthy.annotations.XxComponent;
+import com.zlmthy.annotations.XxServer;
+import com.zlmthy.example.SsServer;
+import com.zlmthy.ioc.ClassPathApplicationContext;
 import com.zlmthy.router.entity.Router;
 import com.zlmthy.utils.ClassUtil;
 import io.netty.handler.codec.http.HttpMethod;
@@ -21,34 +25,23 @@ public class AppTest
      * Rigorous Test :-)
      */
     @Test
-    public void shouldAnswerWithTrue()
-    {
-        assertTrue( true );
+    public void shouldAnswerWithTrue() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        SsServer ssServer = new SsServer();
+        for (Annotation annotation : ssServer.getClass().getAnnotations()){
+            System.out.println(annotation);
+            XxServer xxServer = ((XxServer)annotation);
+            for (Annotation a :xxServer.getClass().getAnnotations()){
+                System.out.println(a);
+            }
+        }
+
     }
 
 
     @Test
-    public void testLoadUtil(){
-        List<Class<?>> allClassByPackageName = ClassUtil.getAllClassByPackageName("com.zlmthy.action");
-
-        String controllerUrl = "";
-
-        for (Class clazz : allClassByPackageName){
-            Annotation annotation = clazz.getAnnotation(RequestMapper.class);
-            RequestMapper requestMapper = (RequestMapper)annotation;
-
-            controllerUrl = requestMapper.value();
-            for (Method method : clazz.getMethods()){
-                RequestMapper mapper = method.getAnnotation(RequestMapper.class);
-                if (mapper!=null){
-                    Router router = new Router();
-                    router.setHttpMethod(HttpMethod.GET);
-                    router.setPath(controllerUrl+mapper.value());
-                    router.setMethod(method);
-                    router.setController(clazz);
-                    System.out.println(router.getHttpMethod());
-                }
-            }
-        }
+    public void testLoadUtil() throws Exception {
+        ClassPathApplicationContext context = new ClassPathApplicationContext("com.zlmthy.example");
+        SsServer ssServer = (SsServer) context.getBean("ssServer");
+        ssServer.say();
     }
 }

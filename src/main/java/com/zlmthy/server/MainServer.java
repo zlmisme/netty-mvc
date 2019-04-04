@@ -1,5 +1,6 @@
 package com.zlmthy.server;
 
+import com.zlmthy.ioc.ClassPathApplicationContext;
 import com.zlmthy.router.RouterUtil;
 import com.zlmthy.utils.log.LogType;
 import com.zlmthy.utils.log.LogUtil;
@@ -25,9 +26,9 @@ import io.netty.util.internal.logging.Log4JLoggerFactory;
 public class MainServer {
 
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         RouterUtil.initRouter();
-
+        ClassPathApplicationContext context = new ClassPathApplicationContext("com.zlmthy.example");
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workGroup = new NioEventLoopGroup();
 
