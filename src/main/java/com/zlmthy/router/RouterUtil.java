@@ -29,12 +29,13 @@ public class RouterUtil {
 
     private static LogUtil log = LogUtil.getLog(LogType.FRAMEWORK);
 
+
     /**
      * 初始化路由表
      */
-    public static void initRouter(){
+    public static void initRouter(String basePackage){
         try {
-            new RouterUtil();
+            new RouterUtil(basePackage);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
             log.error("初始化路由异常, 异常信息{0}",e);
         }
@@ -69,9 +70,9 @@ public class RouterUtil {
      * @throws IllegalAccessException 非法访问异常
      * @throws InstantiationException newInstance()实例化异常
      */
-    private RouterUtil() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    private RouterUtil(String basePackage) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         // 初始化路由
-        List<Class<?>> allClassByPackageName = scanPackageClass(LoadConfig.basePackage);
+        List<Class<?>> allClassByPackageName = scanPackageClass(basePackage);
         String controllerUrl = "";
         for (Class clazz : allClassByPackageName){
             // 判断类是否注解controller

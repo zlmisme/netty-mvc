@@ -25,14 +25,12 @@ import java.util.concurrent.Future;
 @Log4j2
 public class ClassPathApplicationContext {
 
-    private String basePackageName;
 
     private ConcurrentHashMap<String, Object> beans;
 
     private List<Class<?>> classes;
 
     public ClassPathApplicationContext(String basePackageName) throws Exception {
-        this.basePackageName = basePackageName;
         beans = new ConcurrentHashMap<>();
         classes = ClassUtil.getAllClassByPackageNameAndAnnotation(basePackageName, null);
         initBeans();
@@ -51,6 +49,7 @@ public class ClassPathApplicationContext {
                 addBean(beanId, clazz);
             }
         }
+
     }
 
     private void initServers() {
@@ -78,25 +77,12 @@ public class ClassPathApplicationContext {
         }
     }
 
-    private void initBeans() throws NoSuchFieldException {
+    private void initBeans() {
         long begin = System.currentTimeMillis();
         log.info("初始化beans begin");
-        Future f1 = XxThreadPoolExecutor.submit(()->{
-            initComponents();
-        });
-        Future f2 = XxThreadPoolExecutor.submit(()->{
-            initServers();
-        });
-        Future f3 = XxThreadPoolExecutor.submit(()->{
-            initController();
-        });
-        try {
-            f1.get();
-            f2.get();
-            f3.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        initComponents();
+        initServers();
+        initController();
         log.info("初始化beans end，总计初始化{}个bean，花费{}ms", beans.size(), System.currentTimeMillis() - begin);
     }
 
