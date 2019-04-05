@@ -1,6 +1,7 @@
 package com.zlmthy.handle;
 
 import com.zlmthy.enums.RequestMethod;
+import com.zlmthy.ioc.ClassPathApplicationContext;
 import com.zlmthy.router.RouterUtil;
 import com.zlmthy.router.entity.Router;
 import com.zlmthy.utils.ParameterNameUtil;
@@ -13,6 +14,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.util.AsciiString;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
@@ -28,6 +30,7 @@ import static io.netty.handler.codec.rtsp.RtspResponseStatuses.OK;
  * @Description TODO
  * @date 2018/9/5 14:05
  */
+@Log4j2
 public class HealthServerHandle extends ChannelInboundHandlerAdapter {
 
     private static final AsciiString CONTENT_TYPE = new AsciiString("Content-Type");
@@ -39,8 +42,6 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
 
     private static HttpResponse httpResponse;
 
-    private static LogUtil log = LogUtil.getLog(LogType.NETTY_HANDLE);
-
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
@@ -49,7 +50,7 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         if (msg instanceof FullHttpRequest) {
             //客户端的请求对象
@@ -166,12 +167,14 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
      * @throws InstantiationException
      * @throws InvocationTargetException
      */
-    private static Object getRouterResult(Router router,Map params) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private static Object getRouterResult(Router router,Map params) throws Exception {
+        ClassPathApplicationContext context = ClassPathApplicationContext.getInstance();
         //得到方法中的所有参数信息
         Class<?>[] parameterClazz = router.getMethod().getParameterTypes();
         Parameter[] parameters = router.getMethod().getParameters();
         List<Object> listValue = new ArrayList<Object>();
-        String[] parameterNameByAsm = ParameterNameUtil.getMethodParameterNameByAsm(router.getController(), router.getMethod());
+        log.debug("路由信息为：{}", router);
+        String[] parameterNameByAsm = ParameterNameUtil.getMethodParameterNameByAsm(context.getBean(router.getController()).getClass(), router.getMethod());
 
         if (parameterNameByAsm!=null){
             for (int i=0;i<parameterNameByAsm.length;i++){
@@ -183,6 +186,6 @@ public class HealthServerHandle extends ChannelInboundHandlerAdapter {
             }
         }
 
-        return router.getMethod().invoke(router.getController().newInstance(),listValue.toArray());
+        return router.getMethod().invoke(context.getBean(router.getController()),listValue.toArray());
     }
 }

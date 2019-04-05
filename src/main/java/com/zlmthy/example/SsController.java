@@ -14,7 +14,11 @@ public class SsController {
 
     @RequestMapper(value = "/hello",method = {RequestMethod.GET,RequestMethod.POST})
     public String hello() {
-        ssServer.say();
+        if (ssServer == null){
+            System.out.println("null");
+        }else {
+            ssServer.say();
+        }
         return "say hello world! my age is";
     }
 }

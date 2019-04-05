@@ -2,6 +2,7 @@ package com.zlmthy.router.entity;
 
 import com.zlmthy.enums.RequestMethod;
 import io.netty.handler.codec.http.HttpMethod;
+import lombok.Data;
 
 import java.lang.reflect.Method;
 
@@ -11,6 +12,7 @@ import java.lang.reflect.Method;
  * @Description TODO
  * @date 2018/9/5 17:07
  */
+@Data
 public class Router {
 
     /**
@@ -26,45 +28,11 @@ public class Router {
     /**
      * 路由的路径
      */
-    private Class<?> controller;
+    private String controller;
 
     /**
      * 请求方式
      */
     private RequestMethod[] httpMethods;
 
-    public Router() {
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public Class<?> getController() {
-        return controller;
-    }
-
-    public void setController(Class<?> controller) {
-        this.controller = controller;
-    }
-
-    public RequestMethod[] getHttpMethods() {
-        return httpMethods;
-    }
-
-    public void setHttpMethods(RequestMethod[] httpMethods) {
-        this.httpMethods = httpMethods;
-    }
 }

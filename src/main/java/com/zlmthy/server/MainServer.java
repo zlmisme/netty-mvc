@@ -28,7 +28,7 @@ public class MainServer {
 
     public static void main(String[] args) throws Exception {
         ClassPathApplicationContext context = new ClassPathApplicationContext("com.zlmthy.example");
-        RouterUtil.initRouter("com.zlmthy.example");
+//        RouterUtil.initRouter("com.zlmthy.example");
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workGroup = new NioEventLoopGroup();
 
