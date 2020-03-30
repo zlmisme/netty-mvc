@@ -1,6 +1,6 @@
 package com.zlmthy.server;
 
-import com.zlmthy.handle.HealthServerHandle;
+import com.zlmthy.handle.HttpDispatcher;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -36,6 +36,6 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
          */
         p.addLast("deflater", new HttpContentCompressor());
         /*自己写的服务器逻辑处理*/
-        p.addLast(new HealthServerHandle());
+        p.addLast(new HttpDispatcher());
     }
 }

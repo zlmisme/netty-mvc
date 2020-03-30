@@ -1,9 +1,9 @@
 package com.zlmthy.ioc;
 
 import com.zlmthy.annotations.*;
+import com.zlmthy.config.LoadConfig;
 import com.zlmthy.router.RouterUtil;
 import com.zlmthy.router.entity.Router;
-import com.zlmthy.thread.XxThreadPoolExecutor;
 import com.zlmthy.utils.ClassUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -13,8 +13,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * ioc容器操作类
@@ -31,26 +29,29 @@ public class ClassPathApplicationContext {
     private List<Class<?>> classes;
 
     public static ClassPathApplicationContext getInstance(){
-        return getHook.classPathApplicationContext;
+        return Singleton.classPathApplicationContext;
     }
 
-    private static class getHook{
-        public static ClassPathApplicationContext classPathApplicationContext = new ClassPathApplicationContext();
+    private static class Singleton {
+        static ClassPathApplicationContext classPathApplicationContext = new ClassPathApplicationContext();
     }
 
-    private ClassPathApplicationContext(){}
 
-    public ClassPathApplicationContext(String basePackageName) throws Exception {
-        classes = ClassUtil.getAllClassByPackageNameAndAnnotation(basePackageName, null);
+    private ClassPathApplicationContext(){
+        classes = ClassUtil.getAllClassByPackageNameAndAnnotation(LoadConfig.basePackage, null);
         initBeans();
-        initAttribute();
+        try {
+            initAttribute();
+        }catch (Exception e){
+            throw new RuntimeException();
+        }
     }
 
     private void initComponents() {
         for (Class<?> clazz : classes) {
-            Annotation annotation = clazz.getAnnotation(XxComponent.class);
+            XxComponent annotation = clazz.getAnnotation(XxComponent.class);
             if (annotation != null) {
-                String beanId = ((XxComponent) annotation).value();
+                String beanId =  annotation.value();
                 if (StringUtils.isEmpty(beanId)) {
                     // 获取当前类名
                     beanId = toLowerCaseFirstOne(clazz.getSimpleName());
@@ -63,9 +64,9 @@ public class ClassPathApplicationContext {
 
     private void initServers() {
         for (Class<?> clazz : classes) {
-            Annotation annotation = clazz.getAnnotation(XxServer.class);
+            XxServer annotation = clazz.getAnnotation(XxServer.class);
             if (annotation != null) {
-                String beanId = ((XxServer) annotation).value();
+                String beanId = annotation.value();
                 if (StringUtils.isEmpty(beanId)) {
                     // 获取当前类名
                     beanId = toLowerCaseFirstOne(clazz.getSimpleName());
@@ -83,9 +84,9 @@ public class ClassPathApplicationContext {
                 String beanId = toLowerCaseFirstOne(clazz.getSimpleName());
                 Method[] methods = clazz.getMethods();
                 String controllerUrl = "";
-                Annotation requestAnnotation = clazz.getAnnotation(RequestMapper.class);
+                RequestMapper requestAnnotation = clazz.getAnnotation(RequestMapper.class);
                 if (requestAnnotation!=null){
-                    controllerUrl = ((RequestMapper)requestAnnotation).value();
+                    controllerUrl = requestAnnotation.value();
                 }
                 for (Method method : methods){
                     RequestMapper mapper = method.getAnnotation(RequestMapper.class);
@@ -112,13 +113,11 @@ public class ClassPathApplicationContext {
         initServers();
         initController();
         log.info("初始化beans end，总计初始化{}个bean，花费{}ms", beans.size(), System.currentTimeMillis() - begin);
-        beans.forEach((k, v) -> {
-            log.debug("bean {}, object{}", k, v);
-        });
+        beans.forEach((k, v) -> log.debug("bean {}, object{}", k, v));
     }
 
     private void addBean(String beanName, Class clazz) {
-        Object newInstance = null;
+        Object newInstance;
         try {
             newInstance = clazz.newInstance();
             if (beans.containsKey(beanName)) {
@@ -130,7 +129,7 @@ public class ClassPathApplicationContext {
         }
     }
 
-    public Object getBean(String beanId) throws Exception {
+    public Object getBean(String beanId) {
         if (beanId == null || StringUtils.isEmpty(beanId)) {
             throw new RuntimeException("beanId不能为空");
         }
@@ -145,7 +144,7 @@ public class ClassPathApplicationContext {
         if (Character.isLowerCase(s.charAt(0))) {
             return s;
         }
-        return (new StringBuilder()).append(Character.toLowerCase(s.charAt(0))).append(s.substring(1)).toString();
+        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
 
     private void initAttribute() throws Exception {

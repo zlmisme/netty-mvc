@@ -1,5 +1,7 @@
 package com.zlmthy.config;
 
+import lombok.Data;
+
 /**
  * 加载配置
  * @author zengliming
@@ -7,17 +9,9 @@ package com.zlmthy.config;
  * @Description TODO
  * @date 2018/9/28 14:18
  */
+@Data
 public class LoadConfig {
 
-//    public static String basePackage = "*";
-    public static String basePackage = "com.zlmthy.action";
+    public static String basePackage = "com.zlmthy.example";
 
-
-    public String getBasePackage() {
-        return basePackage;
-    }
-
-    public void setBasePackage(String basePackage) {
-        this.basePackage = basePackage;
-    }
 }

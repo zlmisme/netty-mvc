@@ -3,9 +3,11 @@ package com.zlmthy;
 import com.zlmthy.annotations.RequestMapper;
 import com.zlmthy.annotations.XxComponent;
 import com.zlmthy.annotations.XxServer;
+import com.zlmthy.example.SsController;
 import com.zlmthy.example.SsServer;
 import com.zlmthy.ioc.ClassPathApplicationContext;
 import com.zlmthy.router.entity.Router;
+import com.zlmthy.server.MainServer;
 import com.zlmthy.utils.ClassUtil;
 import io.netty.handler.codec.http.HttpMethod;
 import org.junit.Test;
@@ -40,8 +42,8 @@ public class AppTest
 
     @Test
     public void testLoadUtil() throws Exception {
-        ClassPathApplicationContext context = new ClassPathApplicationContext("com.zlmthy.example");
-        SsServer ssServer = (SsServer) context.getBean("ssServer");
-        ssServer.say();
+        ClassPathApplicationContext context = ClassPathApplicationContext.getInstance();
+        SsController ssController = (SsController) context.getBean("ssController");
+        ssController.hello();
     }
 }
