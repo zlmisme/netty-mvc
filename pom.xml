@@ -6,9 +6,10 @@
 
     <groupId>com.zlmthy</groupId>
     <artifactId>oranges</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
-    <name>netty-mvc</name>
+    <name>oranges</name>
     <!-- FIXME change it to the project's website -->
     <url>http://www.example.com</url>
 
@@ -70,6 +71,11 @@
 
     </dependencies>
 
+    <dependencyManagement>
+        <dependencies>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -113,6 +119,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
